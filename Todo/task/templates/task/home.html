@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f9f9f9;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        .task-container {
+            background-color: white;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+        }
+
+        .task-container input[type="checkbox"] {
+            margin-right: 15px;
+            transform: scale(1.2);
+        }
+
+        .task-container p {
+            font-size: 18px;
+            margin: 0;
+            text-decoration: none;
+        }
+
+        .task-container p.completed {
+            text-decoration: line-through;
+            color: gray;
+        }
+
+        .form-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .form-container form {
+            display: inline-block;
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-container input[type="submit"] {
+            padding: 8px 16px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .form-container input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+
+        .remove_task {
+            text-align: right; /* Align the remove button to the right */
+            margin-top: 10px;/* Add some space above the button */
+            margin-left: 20px;
+        }
+
+        .remove-btn {
+            padding: 8px 16px;
+            background-color: #f44336; /* Red color for the remove button */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .remove-btn:hover {
+            background-color: #d32f2f; /* Darker red on hover */
+            transform: scale(1.05);  /* Slightly enlarge the button on hover */
+        }
+
+        .remove-btn:active {
+            background-color: #c62828; /* Even darker red when button is clicked */
+            transform: scale(1);  /* Reset the size after click */
+        }
+
+
+    </style>
+    <script>
+        function toggleTaskStatus(checkbox, taskId) {
+            const taskText = document.getElementById(`task-${taskId}`);
+            const isChecked = checkbox.checked;
+
+            // Update text style
+            if (isChecked) {
+                taskText.classList.add('completed');
+            } else {
+                taskText.classList.remove('completed');
+            }
+
+            // Send the status update to the server
+            fetch("{% url 'task:done' %}", {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    task_id: taskId,
+                    status: isChecked,
+                }),
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <a href="{% url 'user:logout' %}">logout</a>
+    <h1>Task Management</h1>
+
+    <!-- Form to create a task -->
+    <div class="form-container">
+        <form method="post" action="{% url 'task:create_task' %}">
+            {% csrf_token %}
+            <fieldset>
+                <legend>Create a New Task</legend>
+                {{ form.as_p }}
+            </fieldset>
+            <input type="submit" value="Add Task">
+        </form>
+    </div>
+
+    <!-- Display Tasks -->
+    <div class="tasks">
+        {% for task in tasks %}
+            <div class="task-container">
+                <input
+                    type="checkbox"
+                    id="checkbox-{{ task.id }}"
+                    {% if task.status %}checked{% endif %}
+                    onchange="toggleTaskStatus(this, {{ task.id }})"
+                >
+                <p id="task-{{ task.id }}" class="{% if task.status %}completed{% endif %}">
+                    <strong>{{ task.title }}</strong> - {{ task.desc }}
+                </p>
+                <div class="remove_task">
+                    <form method="post" action="{% url 'task:remove_task' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="task_id" value="{{task.id}}">
+                        <input type="submit" value="Remove Task" class="remove-btn">
+                    </form>
+                </div>
+            </div>
+        {% empty %}
+            <p>No tasks available. Add a task using the form above.</p>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

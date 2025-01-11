@@ -1,0 +1,23 @@
+
+{% load static %}
+
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Home Page</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Home Page</h1>
+        <a href="{% url 'user:logout' %}" class="logout-button">Logout</a>
+        <a href="{% url 'user:profile_view' %}" class="logout-button">profile</a>
+        <a href="{% url 'user:get_start' %}" class="logout-button">Get Started</a>
+        <div class="image-container">
+            <img src="{% static 'media/wallpaperflare.com_wallpaper.jpg' %}" alt="Background Wallpaper">
+        </div>
+    </div>
+</body>
+</html>
